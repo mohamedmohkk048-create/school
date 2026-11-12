@@ -1,0 +1,255 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Houari Kadour Exames</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f1f5fb;color:#17233c}
+header{background:linear-gradient(135deg,#102c59,#1767bb);color:white;text-align:center;padding:30px 12px}
+header h1{margin:0 0 10px}
+header p{margin:0;color:#dceaff}
+main{max-width:850px;margin:25px auto;padding:15px}
+.panel{background:white;padding:22px;border-radius:16px;box-shadow:0 5px 20px #102c5912;margin-bottom:18px}
+h2{font-size:21px;margin-top:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
+button,.item{border:0;border-radius:11px;padding:15px;background:#eaf2ff;color:#174d91;font-size:16px;font-weight:bold;cursor:pointer}
+button:hover,.item:hover{background:#1767bb;color:white}
+.primary{background:#1767bb;color:white}
+.hidden{display:none}
+.back{background:#edf0f5;color:#333;margin-bottom:15px}
+.item{display:block;width:100%;text-align:right;margin:8px 0}
+.question{border:1px solid #e1e8f2;border-radius:12px;padding:16px;margin:12px 0}
+.solution{background:#eaf8ef;padding:14px;border-radius:10px;margin-top:12px}
+footer{text-align:center;padding:25px;color:#65738a}
+input,textarea,select{width:100%;padding:12px;border:1px solid #ccd6e5;border-radius:9px;margin:7px 0;font-size:15px}
+</style>
+</head>
+<body>
+
+<header>
+<h1>Houari Kadour Exames</h1>
+<p>منصتك التعليمية للفروض والاختبارات والحلول</p>
+</header>
+
+<main>
+<section id="home" class="panel">
+<h2>📚 اختر المستوى الدراسي</h2>
+<div class="grid" id="levels"></div>
+</section>
+
+<section id="languages" class="panel hidden">
+<button class="back" onclick="go('home')">← رجوع</button>
+<h2>🌐 اختر اللغة</h2>
+<div class="grid">
+<button onclick="chooseLanguage('ar')">🇩🇿 العربية</button>
+<button onclick="chooseLanguage('fr')">🇫🇷 الفرنسية</button>
+</div>
+</section>
+
+<section id="types" class="panel hidden">
+<button class="back" onclick="go('languages')">← رجوع</button>
+<h2>📖 اختر نوع المواضيع</h2>
+<div class="grid">
+<button onclick="chooseType('tests')">📝 الاختبارات</button>
+<button onclick="chooseType('exercises')">📚 الفروض</button>
+</div>
+</section>
+
+<section id="subjects" class="panel hidden">
+<button class="back" onclick="go('types')">← رجوع</button>
+<h2>📚 المواد الدراسية</h2>
+<div id="subjectList"></div>
+</section>
+
+<section id="papers" class="panel hidden">
+<button class="back" onclick="go('subjects')">← رجوع</button>
+<h2 id="paperTitle">المواضيع</h2>
+<div id="paperList"></div>
+</section>
+
+<section id="details" class="panel hidden">
+<button class="back" onclick="go('papers')">← رجوع</button>
+<h2 id="detailTitle"></h2>
+<div id="questions"></div>
+</section>
+
+<section id="admin" class="panel">
+<h2>➕ إضافة تمرين جديد</h2>
+<p>يمكنك إضافة محتوى تجريبي من هنا.</p>
+<input id="newTitle" placeholder="عنوان الاختبار">
+<input id="newSubject" placeholder="المادة">
+<textarea id="newQuestion" placeholder="نص التمرين"></textarea>
+<textarea id="newAnswer" placeholder="الحل"></textarea>
+<button class="primary" onclick="addPaper()">إضافة الاختبار</button>
+<p id="adminMsg"></p>
+</section>
+</main>
+
+<footer>© Houari Kadour Exames</footer>
+
+<script>
+const levels = [
+"الأولى ابتدائي","الثانية ابتدائي","الثالثة ابتدائي",
+"الرابعة ابتدائي","الخامسة ابتدائي",
+"الأولى متوسط","الثانية متوسط","الثالثة متوسط","الرابعة متوسط",
+"الأولى ثانوي","الثانية ثانوي","الثالثة ثانوي"
+];
+
+const subjects = {
+ar:["الرياضيات","اللغة العربية","العلوم الطبيعية","الفيزياء","التاريخ والجغرافيا","التربية الإسلامية","اللغة الفرنسية","اللغة الإنجليزية"],
+fr:["Mathématiques","Arabe","Sciences naturelles","Physique","Histoire et Géographie","Éducation islamique","Français","Anglais"]
+};
+
+let selectedLevel="",selectedLanguage="",selectedType="",selectedSubject="";
+let data=[];
+
+const sample = {
+ar:{
+"الرياضيات":{
+title:"اختبار الرياضيات التجريبي",
+question:"احسب: 25 + 15 × 2",
+answer:"نبدأ بالضرب: 15 × 2 = 30، ثم 25 + 30 = 55."
+},
+"العلوم الطبيعية":{
+title:"اختبار العلوم التجريبي",
+question:"ما هو دور القلب في جسم الإنسان؟",
+answer:"يضخ القلب الدم إلى مختلف أعضاء الجسم."
+},
+"الفيزياء":{
+title:"اختبار الفيزياء التجريبي",
+question:"ما وحدة قياس شدة التيار الكهربائي؟",
+answer:"الأمبير (A)."
+}
+},
+fr:{
+"Mathématiques":{
+title:"Examen de mathématiques",
+question:"Calculez : 25 + 15 × 2",
+answer:"15 × 2 = 30, puis 25 + 30 = 55."
+},
+"Sciences naturelles":{
+title:"Examen de sciences",
+question:"Quel est le rôle du cœur ?",
+answer:"Le cœur pompe le sang dans tout le corps."
+},
+"Physique":{
+title:"Examen de physique",
+question:"Quelle est l'unité de l'intensité électrique ?",
+answer:"L'ampère (A)."
+}
+}
+};
+
+function show(id){
+document.querySelectorAll("main section").forEach(s=>s.classList.add("hidden"));
+document.getElementById(id).classList.remove("hidden");
+}
+function go(id){show(id)}
+
+const levelBox=document.getElementById("levels");
+levels.forEach(level=>{
+let b=document.createElement("button");
+b.textContent=level;
+b.onclick=()=>{
+selectedLevel=level;
+show("languages");
+};
+levelBox.appendChild(b);
+});
+
+function chooseLanguage(lang){
+selectedLanguage=lang;
+show("types");
+}
+
+function chooseType(type){
+selectedType=type;
+let list=document.getElementById("subjectList");
+list.innerHTML="";
+subjects[selectedLanguage].forEach(subject=>{
+let b=document.createElement("button");
+b.className="item";
+b.textContent=subject;
+b.onclick=()=>chooseSubject(subject);
+list.appendChild(b);
+});
+show("subjects");
+}
+
+function chooseSubject(subject){
+selectedSubject=subject;
+document.getElementById("paperTitle").textContent=subject;
+let list=document.getElementById("paperList");
+list.innerHTML="";
+let entries=data.filter(x=>
+x.level===selectedLevel &&
+x.language===selectedLanguage &&
+x.type===selectedType &&
+x.subject===subject
+);
+let example=sample[selectedLanguage][subject];
+if(example){
+entries.push({
+title:example.title,
+question:example.question,
+answer:example.answer
+});
+}
+if(entries.length===0){
+list.innerHTML="<p>لا توجد مواضيع مضافة لهذه المادة حالياً.</p>";
+}
+entries.forEach((paper,index)=>{
+let b=document.createElement("button");
+b.className="item";
+b.textContent=paper.title;
+b.onclick=()=>openPaper(paper);
+list.appendChild(b);
+});
+show("papers");
+}
+
+function openPaper(paper){
+document.getElementById("detailTitle").textContent=paper.title;
+let q=document.getElementById("questions");
+q.innerHTML="";
+let card=document.createElement("div");
+card.className="question";
+let title=document.createElement("h3");
+title.textContent=selectedLanguage==="ar"?"التمرين":"Exercice";
+let question=document.createElement("p");
+question.textContent=paper.question;
+let btn=document.createElement("button");
+btn.className="primary";
+btn.textContent=selectedLanguage==="ar"?"إظهار الحل":"Afficher la solution";
+let solution=document.createElement("div");
+solution.className="solution hidden";
+solution.textContent=paper.answer;
+btn.onclick=()=>solution.classList.toggle("hidden");
+card.append(title,question,btn,solution);
+q.appendChild(card);
+show("details");
+}
+
+function addPaper(){
+let title=document.getElementById("newTitle").value.trim();
+let subject=document.getElementById("newSubject").value.trim();
+let question=document.getElementById("newQuestion").value.trim();
+let answer=document.getElementById("newAnswer").value.trim();
+if(!title||!subject||!question||!answer){
+document.getElementById("adminMsg").textContent="يرجى ملء جميع الخانات.";
+return;
+}
+data.push({
+title,subject,question,answer,
+level:selectedLevel,
+language:selectedLanguage,
+type:selectedType
+});
+document.getElementById("adminMsg").textContent="تمت إضافة الاختبار.";
+}
+</script>
+</body>
+</html>
