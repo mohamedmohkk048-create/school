@@ -1,0 +1,226 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Houari Kadour Exames</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f3f6fc;font-family:Arial;color:#172b4d}
+header{background:#123c70;color:white;text-align:center;padding:28px 10px}
+header h1{margin:0 0 8px;font-size:26px}
+main{max-width:750px;margin:25px auto;padding:12px}
+.page{background:white;padding:22px;border-radius:15px;box-shadow:0 4px 18px #0001}
+h2{text-align:center}
+button{border:0;border-radius:10px;padding:15px;background:#e8f0fc;color:#15549b;font-size:16px;font-weight:bold;cursor:pointer}
+button:hover{background:#15549b;color:white}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.full{width:100%;margin:7px 0;text-align:right}
+.back{background:#eee;color:#333;margin-bottom:15px}
+.primary{background:#15549b;color:white}
+.hidden{display:none}
+.question{border:1px solid #ddd;padding:16px;border-radius:12px;margin-top:15px}
+.solution{background:#e6f7e9;padding:15px;border-radius:9px;margin-top:12px}
+</style>
+</head>
+<body>
+
+<header>
+<h1>Houari Kadour Exames</h1>
+<p>منصة الفروض والاختبارات والحلول</p>
+</header>
+
+<main>
+
+<!-- اختيار السنة -->
+<section id="year" class="page">
+<h2>📚 اختر السنة الدراسية</h2>
+<div class="grid">
+<button onclick="selectYear('الأولى متوسط')">الأولى متوسط</button>
+<button onclick="selectYear('الثانية متوسط')">الثانية متوسط</button>
+<button onclick="selectYear('الثالثة متوسط')">الثالثة متوسط</button>
+<button onclick="selectYear('الرابعة متوسط')">الرابعة متوسط</button>
+</div>
+</section>
+
+<!-- اختيار اللغة -->
+<section id="language" class="page hidden">
+<button class="back" onclick="show('year')">رجوع</button>
+<h2>🌍 اختر اللغة</h2>
+<div class="grid">
+<button onclick="selectLanguage('العربية')">🇩🇿 العربية</button>
+<button onclick="selectLanguage('الفرنسية')">🇫🇷 الفرنسية</button>
+</div>
+</section>
+
+<!-- اختيار النوع -->
+<section id="type" class="page hidden">
+<button class="back" onclick="show('language')">رجوع</button>
+<h2>📖 اختر نوع المواضيع</h2>
+<div class="grid">
+<button onclick="selectType('اختبارات')">📝 اختبارات</button>
+<button onclick="selectType('فروض')">📚 فروض</button>
+</div>
+</section>
+
+<!-- المواد -->
+<section id="subjects" class="page hidden">
+<button class="back" onclick="show('type')">رجوع</button>
+<h2>📚 اختر المادة</h2>
+<div id="subjectList"></div>
+</section>
+
+<!-- الاختبارات -->
+<section id="tests" class="page hidden">
+<button class="back" onclick="show('subjects')">رجوع</button>
+<h2 id="subjectTitle"></h2>
+<div id="testList"></div>
+</section>
+
+<!-- التمارين والحلول -->
+<section id="exercise" class="page hidden">
+<button class="back" onclick="show('tests')">رجوع</button>
+<h2 id="exerciseTitle"></h2>
+<div id="exerciseContent"></div>
+</section>
+
+</main>
+
+<script>
+let year='',language='',type='',subject='';
+
+const subjects={
+'العربية':['الرياضيات','العلوم الطبيعية','الفيزياء','اللغة العربية','التاريخ والجغرافيا','اللغة الفرنسية','اللغة الإنجليزية'],
+'الفرنسية':['Mathématiques','Sciences naturelles','Physique','Arabe','Histoire et Géographie','Français','Anglais']
+};
+
+// بيانات تجريبية للرابعة متوسط
+const database={
+'الرياضيات':[
+{
+title:'اختبار الرياضيات رقم 1',
+questions:[
+{q:'احسب: 25 + 15 × 2',a:'نحسب الضرب أولاً: 15 × 2 = 30، ثم 25 + 30 = 55.'},
+{q:'حل المعادلة: 2x + 4 = 10',a:'2x = 10 - 4 = 6، إذن x = 3.'}
+]
+},
+{
+title:'اختبار الرياضيات رقم 2',
+questions:[
+{q:'احسب: 8 × 7 - 10',a:'8 × 7 = 56، ثم 56 - 10 = 46.'}
+]
+}
+],
+'العلوم الطبيعية':[
+{
+title:'اختبار العلوم رقم 1',
+questions:[
+{q:'ما دور القلب في جسم الإنسان؟',a:'القلب يضخ الدم إلى مختلف أعضاء الجسم.'},
+{q:'ما وظيفة الرئتين؟',a:'تسمح الرئتان بالتبادل الغازي: أخذ الأكسجين وطرح ثاني أكسيد الكربون.'}
+]
+}
+],
+'الفيزياء':[
+{
+title:'اختبار الفيزياء رقم 1',
+questions:[
+{q:'ما وحدة قياس شدة التيار الكهربائي؟',a:'الأمبير (A).'},
+{q:'ما رمز التوتر الكهربائي؟',a:'يرمز للتوتر الكهربائي بالحرف U.'}
+]
+}
+],
+'الرياضيات-FR':[
+{title:'Examen de mathématiques 1',questions:[
+{q:'Calculez : 25 + 15 × 2',a:'15 × 2 = 30, puis 25 + 30 = 55.'}
+]}
+]
+};
+
+function show(id){
+document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));
+document.getElementById(id).classList.remove('hidden');
+}
+
+function selectYear(v){
+year=v;
+show('language');
+}
+
+function selectLanguage(v){
+language=v;
+show('type');
+}
+
+function selectType(v){
+type=v;
+let list=document.getElementById('subjectList');
+list.innerHTML='';
+subjects[language].forEach(s=>{
+let b=document.createElement('button');
+b.className='full';
+b.textContent=s;
+b.onclick=()=>selectSubject(s);
+list.appendChild(b);
+});
+show('subjects');
+}
+
+function selectSubject(s){
+subject=s;
+document.getElementById('subjectTitle').textContent=s;
+let list=document.getElementById('testList');
+list.innerHTML='';
+let key=s;
+if(language==='الفرنسية' && s==='Mathématiques')key='الرياضيات-FR';
+let tests=database[key]||[];
+if(tests.length===0){
+list.innerHTML='<p>لا توجد اختبارات مضافة لهذه المادة حالياً.</p>';
+}else{
+tests.forEach((test,i)=>{
+let b=document.createElement('button');
+b.className='full';
+b.textContent=test.title;
+b.onclick=()=>openTest(test);
+list.appendChild(b);
+});
+}
+show('tests');
+}
+
+function openTest(test){
+document.getElementById('exerciseTitle').textContent=test.title;
+let content=document.getElementById('exerciseContent');
+content.innerHTML='';
+test.questions.forEach((item,i)=>{
+let card=document.createElement('div');
+card.className='question';
+
+let title=document.createElement('h3');
+title.textContent='التمرين '+(i+1);
+
+let question=document.createElement('p');
+question.textContent=item.q;
+
+let btn=document.createElement('button');
+btn.className='primary';
+btn.textContent='إظهار الحل';
+
+let answer=document.createElement('div');
+answer.className='solution hidden';
+answer.textContent=item.a;
+
+btn.onclick=()=>{
+answer.classList.toggle('hidden');
+btn.textContent=answer.classList.contains('hidden')?'إظهار الحل':'إخفاء الحل';
+};
+
+card.append(title,question,btn,answer);
+content.appendChild(card);
+});
+show('exercise');
+}
+</script>
+
+</body>
+</html>
